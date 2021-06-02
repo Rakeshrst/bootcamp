@@ -1,51 +1,69 @@
 package com.rst.bootcamp.model;
 
+import java.util.List;
+
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 @Entity
 public class Instructor {
 
+	
+	public static final int ROOT_ID = 1;
 	@Id
 	@GeneratedValue
+	@JsonIgnore
 	private int id;
-
+	
+	@Column(unique=true)
 	private String instructorName;
 
-	private String adminName;
 
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true)
-	@JoinTable(name = "instructor_hierarchy", joinColumns = {
-			@JoinColumn(name = "instructor_id", referencedColumnName = "id") }, inverseJoinColumns = {
-					@JoinColumn(name = "subordinate_id", referencedColumnName = "id") })
-	private Instructor subordinate;
+	  @JsonIgnore
+	  @ManyToOne(cascade = { CascadeType.PERSIST})
+	  private Instructor parent;
+	  
+	  @Transient
+	  private String admin;
+	  
+	  @OneToMany(mappedBy="parent", cascade = { CascadeType.REMOVE, CascadeType.PERSIST} )
+	  private List<Instructor> subordinates;
 
+	 
+	
+	  
 	public Instructor() {
-	}
-
-	public Instructor(int id, String instructorName, String adminName) {
+	    }
+	
+	  public Instructor(int id, String instructorName) {
 		super();
 		this.id = id;
 		this.instructorName = instructorName;
-		this.adminName = adminName;
 	}
 
-	public Instructor(String instructorName, String adminName) {
-		this.instructorName = instructorName;
-		this.adminName = adminName;
-	}
-	public Instructor(int id, String instructorName, String adminName, Instructor subordinate) {
+
+	public Instructor(int id, String instructorName, Instructor parent) {
 		super();
 		this.id = id;
 		this.instructorName = instructorName;
-		this.adminName = adminName;
-		this.subordinate = subordinate;
+		this.parent = parent;
+	}
+
+	public Instructor(int id, String instructorName, Instructor parent, List<Instructor> subordinates) {
+		super();
+		this.id = id;
+		this.instructorName = instructorName;
+		this.parent = parent;
+		this.subordinates = subordinates;
 	}
 
 	public int getId() {
@@ -64,26 +82,43 @@ public class Instructor {
 		this.instructorName = instructorName;
 	}
 
-	public String getAdminName() {
-		return adminName;
+	public Instructor getParent() {
+		return parent;
 	}
 
-	public void setAdminName(String adminName) {
-		this.adminName = adminName;
+	public void setParent(Instructor parent) {
+		this.parent = parent;
 	}
 
-	public Instructor getSubordinate() {
-		return subordinate;
+	public List<Instructor> getSubordinates() {
+		return subordinates;
 	}
 
-	public void setSubordinate(Instructor subordinate) {
-		this.subordinate = subordinate;
+	public void setSubordinates(List<Instructor> subordinates) {
+		this.subordinates = subordinates;
+	}
+	
+
+	public String getAdmin() {
+		if(getParent()!=null) {
+		return getParent().getInstructorName();
+		}
+		else {
+	return null;
+		}
+	}
+
+	public void setAdmin(String admin) {
+		this.admin = admin;
 	}
 
 	@Override
 	public String toString() {
-		return "Instructor [id=" + id + ", instructorName=" + instructorName + ", adminName=" + adminName
-				+ ", subordinate=" + subordinate + "]";
+		return "Instructor [id=" + id + ", instructorName=" + instructorName + ", parent=" + parent + ", admin="
+				+ admin + ", subordinates=" + subordinates + "]";
 	}
 
+
+
+	  
 }

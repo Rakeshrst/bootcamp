@@ -1,10 +1,11 @@
 package com.rst.bootcamp.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,25 +16,28 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.rst.bootcamp.model.Instructor;
 import com.rst.bootcamp.repository.InstructorRepository;
 
+
 @ExtendWith(MockitoExtension.class)
-public class InstructorServiceTest {
+class InstructorServiceTest {
 
 
 	@InjectMocks
-	private InstructorService business;
+	private InstructorServiceImpl business;
 	
 	@Mock
 	private InstructorRepository repository;
+
 	
 	@Test
-	public void retrieveInstructorsUsingDataService_basic() {
-		when(repository.findAll()).thenReturn(
-				Arrays.asList(new Instructor(1,"Rohit","A1"),new Instructor(2,"Ronit","A1"))
-				); 
+	void retrieveInstructorsUsingDataService_basic() {
+		Optional<Instructor> instructor= Optional.of(new Instructor(1,"Admin",null));
+		Instructor instructor2= new Instructor(2,"I1",instructor.get());
+		Instructor instructor3= new Instructor(3,"I2",instructor.get());
+		instructor.get().setSubordinates(Arrays.asList(instructor2,instructor3));
+		when(repository.findById(anyInt())).thenReturn(instructor);
 		
-		List<Instructor> instructors=business.retrieveAllInstructors();
-		assertEquals("A1",instructors.get(0).getAdminName());
-		assertEquals("Ronit",instructors.get(1).getInstructorName());
+		Instructor instructorTest=business.retrieveAllInstructors();
+		assertEquals("Admin",instructorTest.getInstructorName());
 		
 	}
 	
